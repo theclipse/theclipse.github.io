@@ -7,14 +7,16 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="form">
+        <label for="count">Number of image-sound combinations:</label>
+        <input type="number" id="count" min="1" value="1">
+        <label for="duration">Duration of each flash (seconds):</label>
+        <input type="number" id="duration" min="0.1" step="0.1" value="1">
+        <button id="start">Start</button>
+    </div>
+
     <div class="container">
-        <div class="form">
-            <label for="count">Number of image-sound combinations:</label>
-            <input type="number" id="count" min="1" value="1">
-            <label for="duration">Duration of each flash (seconds):</label>
-            <input type="number" id="duration" min="0.1" step="0.1" value="1">
-            <button id="start">Start</button>
-        </div>
+        
         <div class="flash-container">
             <img id="flashImage" src="" alt="Flash Image">
         </div>
@@ -24,7 +26,7 @@
 </html>
 
 <style>
-    body {
+    .container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -32,15 +34,16 @@
     margin: 0;
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
-}
-
-.container {
     text-align: center;
 }
 
-.form {
-    margin-bottom: 20px;
-}
+/* .container {
+    text-align: center;
+} */
+
+/* .form {
+    margin-top: 20px;
+} */
 
 .flash-container {
     display: none;
@@ -65,11 +68,18 @@
     const flashImage = document.getElementById('flashImage');
 
     let currentIndex = 0;
+    let soundPlays = [];
+    let imagePlays = [];
+
+    for(i=0; i < count; i++) {
+        soundPlays.push(Math.floor(Math.random() * 8) )
+        imagePlays.push(Math.floor(Math.random() *8))
+    }
 
     const flashImageSound = () => {
         if (currentIndex < count) {
-            flashImage.src = `images/${currentIndex + 1}.png`;
-            const sound = new Audio(`sounds/${currentIndex + 1}.wav`);
+            flashImage.src = `images/${imagePlays[currentIndex]}.png`;
+            const sound = new Audio(`sounds/${soundPlays[currentIndex]}.wav`);
             sound.play();
 
             flashContainer.style.display = 'block';
