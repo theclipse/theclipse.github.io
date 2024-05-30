@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image and Sound Flash</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form">
+            <label for="count">Number of image-sound combinations:</label>
+            <input type="number" id="count" min="1" value="1">
+            <label for="duration">Duration of each flash (seconds):</label>
+            <input type="number" id="duration" min="0.1" step="0.1" value="1">
+            <button id="start">Start</button>
+        </div>
+        <div class="flash-container">
+            <img id="flashImage" src="" alt="Flash Image">
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+<style>
+    body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    text-align: center;
+}
+
+.form {
+    margin-bottom: 20px;
+}
+
+.flash-container {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#flashImage {
+    width: 256px;
+    height: 256px;
+}
+</style>
+
+<script>
+    document.getElementById('start').addEventListener('click', () => {
+    const count = parseInt(document.getElementById('count').value);
+    const duration = parseFloat(document.getElementById('duration').value) * 1000;
+
+    const flashContainer = document.querySelector('.flash-container');
+    const flashImage = document.getElementById('flashImage');
+
+    let currentIndex = 0;
+
+    const flashImageSound = () => {
+        if (currentIndex < count) {
+            flashImage.src = `images/${currentIndex + 1}.png`;
+            const sound = new Audio(`sounds/${currentIndex + 1}.wav`);
+            sound.play();
+
+            flashContainer.style.display = 'block';
+
+            setTimeout(() => {
+                flashContainer.style.display = 'none';
+                currentIndex++;
+                setTimeout(flashImageSound, duration);
+            }, duration);
+        }
+    };
+
+    flashImageSound();
+});
+</script>
