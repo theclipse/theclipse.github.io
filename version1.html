@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Anzan Game</title>
+    <style>
+        .flashNumber {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        /* .form {
+            margin-bottom: 20px;
+        } */
+        #flashNumber {
+            font-size: 3em;
+            margin: 20px;
+            display: none;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form">
+            <label for="count">Number of digits to add:</label>
+            <input type="number" id="count" min="1" value="1"><br>
+            <label for="digitLength">Length of each digit (2, 3, 4, or 5):</label>
+            <input type="number" id="digitLength" min="2" max="5" value="2"><br>
+            <label for="duration">Duration of each flash (seconds):</label>
+            <input type="number" id="duration" min="0.1" step="0.1" value="1"><br>
+            <button id="start">Start</button>
+        </div>
+        <div id="flashNumber"></div>
+        <button id="showAll" style="display: none;">Show All</button>
+        <table id="resultTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Step</th>
+                    <th>Calculation</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+        document.getElementById('start').addEventListener('click', () => {
+            const count = parseInt(document.getElementById('count').value);
+            const digitLength = parseInt(document.getElementById('digitLength').value);
+            const duration = parseFloat(document.getElementById('duration').value) * 1000;
+
+            let numbers = [];
+            for (let i = 0; i < count; i++) {
+                let number = Math.floor(Math.random() * (10 ** digitLength));
+                numbers.push(number);
+            }
+
+            const flashNumberElement = document.getElementById('flashNumber');
+            const resultTable = document.getElementById('resultTable');
+            const resultBody = resultTable.querySelector('tbody');
+            resultBody.innerHTML = '';
+
+            let currentIndex = 0;
+            let total = 0;
+            const steps = [];
+
+            const flashNextNumber = () => {
+                if (currentIndex < numbers.length) {
+                    flashNumberElement.textContent = numbers[currentIndex];
+                    flashNumberElement.style.display = 'block';
+                    setTimeout(() => {
+                        flashNumberElement.style.display = 'none';
+                        total += numbers[currentIndex];
+                        if (currentIndex > 0) {
+                            steps.push({ step: currentIndex, calculation: `${total - numbers[currentIndex]} + ${numbers[currentIndex]}`, result: total });
+                        } else {
+                            steps.push({ step: currentIndex + 1, calculation: `${numbers[currentIndex]}`, result: total });
+                        }
+                        currentIndex++;
+                        setTimeout(flashNextNumber, duration);
+                    }, duration);
+                } else {
+                    document.getElementById('showAll').style.display = 'block';
+                }
+            };
+
+            flashNextNumber();
+
+            document.getElementById('showAll').addEventListener('click', () => {
+                resultTable.style.display = 'table';
+                resultBody.innerHTML = '';
+                steps.forEach(step => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${step.step}</td><td>${step.calculation}</td><td>${step.result}</td>`;
+                    resultBody.appendChild(row);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
