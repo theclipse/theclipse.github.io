@@ -8,6 +8,11 @@
 </head>
 <body>
     <div class="form">
+        <label for="folder">Choose folder:</label>
+        <select id="folder">
+            <option value="images">Images</option>
+            <option value="colors">Colors</option>
+        </select>
         <label for="count">Number of image-sound combinations:</label>
         <input type="number" id="count" min="1" value="1">
         <label for="duration">Duration of each flash (seconds):</label>
@@ -32,7 +37,6 @@
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
     font-family: Arial, sans-serif;
     text-align: center;
 }
@@ -63,6 +67,7 @@
     document.getElementById('start').addEventListener('click', () => {
     const count = parseInt(document.getElementById('count').value);
     const duration = parseFloat(document.getElementById('duration').value) * 1000;
+    const folder = document.getElementById('folder').value;
 
     const flashContainer = document.querySelector('.flash-container');
     const flashImage = document.getElementById('flashImage');
@@ -78,7 +83,7 @@
 
     const flashImageSound = () => {
         if (currentIndex < count) {
-            flashImage.src = `images/${imagePlays[currentIndex]}.png`;
+            flashImage.src = `${folder}/${imagePlays[currentIndex]}.png`;
             const sound = new Audio(`sounds/${soundPlays[currentIndex]}.wav`);
             sound.play();
 
