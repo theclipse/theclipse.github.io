@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concentration Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #167c3c; /* Poker table green */
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin: 0 auto;
+            max-width: 100%;
+            padding: 0 10px;
+        }
+
+        .card {
+            width: min(80px, 20vw);
+            height: min(120px, 30vw);
+            background: #8b0000; /* Dark red base */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: min(24px, 6vw);
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            position: relative;
+            border: none;
+            transform-style: preserve-3d;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 50% 50%, #dda525 2px, transparent 2px) 0 0,
+                radial-gradient(circle at 50% 50%, #a00 2px, transparent 2px) 10px 10px;
+            background-size: 20px 20px;
+            background-color: #cc0000;
+            border-radius: 10px;
+            backface-visibility: hidden;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card::after {
+            content: attr(data-value);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotateY(180deg);
+            backface-visibility: hidden;
+            border-radius: 10px;
+            font-size: min(24px, 6vw);
+        }
+
+        .red::after {
+            color: #d40000;
+        }
+
+        .black::after {
+            color: #000;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Concentration Memory Game</h1>
+    <div id="gameContainer"></div>
+    <script>
+        const suits = [['♣', '♠'], ['♦', '♥']];
+        const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        
+        let pairs = parseInt(prompt("Enter number of pairs (1-13):"), 10);
+        if (isNaN(pairs) || pairs < 1 || pairs > 13) pairs = 6;
+        
+        let selectedRanks = ranks.slice(0, pairs);
+        let firstHalf = [];
+        let secondHalf = [];
+        
+        selectedRanks.forEach((rank, index) => {
+            let colorGroup = suits[index % 2];
+            let card1 = `${rank}${colorGroup[0]}`;
+            let card2 = `${rank}${colorGroup[1]}`;
+            firstHalf.push(card1);
+            secondHalf.push(card2);
+        });
+        
+        firstHalf = shuffle(firstHalf);
+        secondHalf = shuffle(secondHalf);
+        let deck = [...firstHalf, ...secondHalf];
+        
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function createGameBoard(deck) {
+            const gameContainer = document.getElementById('gameContainer');
+            let columns = 4;
+            gameContainer.style.gridTemplateColumns = `repeat(${columns}, auto)`;
+            gameContainer.className = 'game-board';
+            
+            deck.forEach(card => {
+                let cardElement = document.createElement('div');
+                cardElement.className = `card ${isRed(card) ? 'red' : 'black'}`;
+                cardElement.dataset.value = card;
+                cardElement.addEventListener('click', flipCard);
+                gameContainer.appendChild(cardElement);
+            });
+        }
+        
+        function isRed(card) {
+            return card.includes('♦') || card.includes('♥');
+        }
+        
+        let flippedCards = [];
+        let matchedPairs = 0;
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
+                this.classList.add('flipped');
+                flippedCards.push(this);
+            }
+            
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 500);
+            }
+        }
+        
+        function checkMatch() {
+            if (flippedCards[0].dataset.value[0] === flippedCards[1].dataset.value[0]) {
+                flippedCards = [];
+                matchedPairs++;
+                if (matchedPairs === pairs) {
+                    alert("You won!");
+                }
+            } else {
+                flippedCards.forEach(card => {
+                    card.classList.remove('flipped');
+                });
+                flippedCards = [];
+            }
+        }
+        
+        createGameBoard(deck);
+    </script>
+</body>
+</html>
