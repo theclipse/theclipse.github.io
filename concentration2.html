@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concentration Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .game-board {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            background-color: gray;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            border: 2px solid black;
+        }
+        .flipped {
+            background-color: white;
+            color: inherit;
+        }
+        .red {
+            color: red;
+        }
+        .black {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Concentration Memory Game</h1>
+    <div id="gameContainer"></div>
+    <script>
+        const suits = [['♣', '♠'], ['♦', '♥']];
+        const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        
+        let pairs = parseInt(prompt("Enter number of pairs (1-13):"), 10);
+        if (isNaN(pairs) || pairs < 1 || pairs > 13) pairs = 6;
+        
+        let selectedRanks = ranks.slice(0, pairs);
+        let firstHalf = [];
+        let secondHalf = [];
+        
+        selectedRanks.forEach((rank, index) => {
+            let colorGroup = suits[index % 2];
+            let card1 = `${rank}${colorGroup[0]}`;
+            let card2 = `${rank}${colorGroup[1]}`;
+            firstHalf.push(card1);
+            secondHalf.push(card2);
+        });
+        
+        firstHalf = shuffle(firstHalf);
+        secondHalf = shuffle(secondHalf);
+        let deck = [...firstHalf, ...secondHalf];
+        
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function createGameBoard(deck) {
+            const gameContainer = document.getElementById('gameContainer');
+            let columns = 4;
+            gameContainer.style.gridTemplateColumns = `repeat(${columns}, auto)`;
+            gameContainer.className = 'game-board';
+            
+            deck.forEach(card => {
+                let cardElement = document.createElement('div');
+                cardElement.className = `card ${isRed(card) ? 'red' : 'black'}`;
+                cardElement.dataset.value = card;
+                cardElement.addEventListener('click', flipCard);
+                gameContainer.appendChild(cardElement);
+            });
+        }
+        
+        function isRed(card) {
+            return card.includes('♦') || card.includes('♥');
+        }
+        
+        let flippedCards = [];
+        let matchedPairs = 0;
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
+                this.textContent = this.dataset.value;
+                this.classList.add('flipped');
+                flippedCards.push(this);
+            }
+            
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 500);
+            }
+        }
+        
+        function checkMatch() {
+            if (flippedCards[0].dataset.value[0] === flippedCards[1].dataset.value[0]) {
+                flippedCards = [];
+                matchedPairs++;
+                if (matchedPairs === pairs) {
+                    alert("You won!");
+                }
+            } else {
+                flippedCards.forEach(card => {
+                    card.textContent = "";
+                    card.classList.remove('flipped');
+                });
+                flippedCards = [];
+            }
+        }
+        
+        createGameBoard(deck);
+    </script>
+</body>
+</html>
