@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Flash Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 300px;
+    }
+    .image {
+      width: 200px;
+      height: 156px;
+      margin: 10px;
+      border: 0.5px solid #ccc;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Image Flash Game</h1>
+
+  <div>
+    <label for="timerSeconds">Timer (seconds):</label>
+    <input type="number" id="timerSeconds" value="15" />
+  </div>
+
+  <div style="margin-top: 10px;">
+    <label for="numImages">Number of Images:</label>
+    <input type="number" id="numImages" value="4" />
+    <label for="flashDuration">Flash Duration (seconds):</label>
+    <input type="number" id="flashDuration" value="2" />
+    <button id="startBtn">Start Game</button>
+    <button id="repeatBtn">Repeat Game</button>
+  </div>
+
+  <div class="container" id="imageContainer"></div>
+
+  <script>
+    let currentImageNumbers = [];
+    let timerTimeout;
+
+    function getRandomUniqueNumbers(count, max) {
+      const numbers = new Set();
+      while (numbers.size < count) {
+        const rand = Math.ceil(Math.random() * max);
+        numbers.add(rand);
+      }
+      return Array.from(numbers);
+    }
+
+    function displayImages(imageNumbers, flashDuration) {
+      const container = document.getElementById('imageContainer');
+      container.innerHTML = '';
+
+      imageNumbers.forEach(num => {
+        const img = document.createElement('img');
+        img.src = 'images/image' + num + '.png';
+        img.classList.add('image');
+        container.appendChild(img);
+      });
+
+      // Hide images after flashDuration
+      setTimeout(() => {
+        document.querySelectorAll('.image').forEach(img => {
+          img.style.visibility = 'hidden';
+        });
+      }, flashDuration);
+    }
+
+    function startGame() {
+      const numImages = parseInt(document.getElementById('numImages').value);
+      const flashDuration = parseInt(document.getElementById('flashDuration').value) * 1000;
+      const timerSeconds = parseInt(document.getElementById('timerSeconds').value) * 1000;
+
+      if (timerTimeout) clearTimeout(timerTimeout);
+
+      // Generate and display new images
+      currentImageNumbers = getRandomUniqueNumbers(numImages, 10);
+      displayImages(currentImageNumbers, flashDuration);
+
+      // When the timer expires, flash background + show images again for 0.5s
+      timerTimeout = setTimeout(() => {
+        document.body.style.backgroundColor = 'white';
+
+        const images = document.querySelectorAll('.image');
+        images.forEach(img => img.style.visibility = 'visible');
+
+        setTimeout(() => {
+          document.body.style.backgroundColor = '';
+          images.forEach(img => img.style.visibility = 'hidden');
+        }, 800);
+      }, timerSeconds);
+    }
+
+    function repeatGame() {
+      const flashDuration = parseInt(document.getElementById('flashDuration').value) * 1000;
+      if (currentImageNumbers.length === 0) {
+        alert("Please start the game first.");
+        return;
+      }
+      displayImages(currentImageNumbers, flashDuration);
+    }
+
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    document.getElementById('repeatBtn').addEventListener('click', repeatGame);
+  </script>
+
+</body>
+</html>

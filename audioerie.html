@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Audio Dual-N-Back</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eee;
+      color: #111;
+      text-align: center;
+      padding: 20px;
+    }
+    #game {
+      margin-top: 30px;
+    }
+    #flash {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      height: 100px;
+      background: transparent;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #flash.active {
+      background: limegreen;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Audio Dual-N-Back</h1>
+  <p>Enter N-back level and press Start</p>
+  <input type="number" id="nValue" min="1" max="10" value="2">
+  <button onclick="startGame()">Start</button>
+
+  <div id="game"></div>
+  <div id="flash"></div>
+
+  <script>
+    let sequence = [];
+    let nBack = 2;
+    let totalPlays = 30;
+    let currentIndex = 0;
+    let intervalId = null;
+
+    // Match probability (0–100). Higher = more matches.
+    let matchPercentage = 30; 
+
+    function startGame() {
+      nBack = parseInt(document.getElementById("nValue").value);
+      sequence = [];
+      currentIndex = 0;
+      document.getElementById("game").innerHTML = 
+        `<p>Game started with N = ${nBack}</p>`;
+      
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(playStep, 3000);
+    }
+
+    function playStep() {
+      if (currentIndex >= totalPlays) {
+        clearInterval(intervalId);
+        document.getElementById("game").innerHTML += "<p>Game Over!</p>";
+        return;
+      }
+
+      let soundIndex;
+      if (
+        currentIndex >= nBack && 
+        Math.random() * 100 < matchPercentage
+      ) {
+        // Force a match with N steps back
+        soundIndex = sequence[currentIndex - nBack];
+      } else {
+        // Random sound 0–7
+        soundIndex = Math.floor(Math.random() * 8);
+      }
+
+      sequence.push(soundIndex);
+      playSound(soundIndex);
+
+      // Check for match
+      if (currentIndex >= nBack && soundIndex === sequence[currentIndex - nBack]) {
+        flashGreen();
+      }
+
+      currentIndex++;
+    }
+
+    function playSound(index) {
+      let audio = new Audio(`sounds/${index}.wav`);
+      audio.play();
+    }
+
+    function flashGreen() {
+      let flashBox = document.getElementById("flash");
+      flashBox.classList.add("active");
+      setTimeout(() => flashBox.classList.remove("active"), 500);
+    }
+  </script>
+</body>
+</html>
