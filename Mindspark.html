@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dual N-Back</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+header {
+    padding: 10px;
+    text-align: center;
+    background: #222;
+}
+
+select, button {
+    font-size: 16px;
+}
+
+#game {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 90px);
+    grid-template-rows: repeat(3, 90px);
+    gap: 8px;
+}
+
+.cell {
+    width: 90px;
+    height: 90px;
+    background: #333;
+    border-radius: 8px;
+}
+
+.cell.active {
+    background: #00c8ff;
+}
+
+.cell.center {
+    background: #111;
+}
+
+#controls {
+    display: flex;
+    width: 100%;
+}
+
+.control-btn {
+    flex: 1;
+    padding: 20px;
+    font-size: 18px;
+    border: none;
+    color: white;
+}
+
+#locBtn {
+    background: #2e7d32;
+}
+
+#audBtn {
+    background: #1565c0;
+}
+
+#startBtn {
+    margin-top: 10px;
+    padding: 10px 20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <label>N-Back Level:
+        <select id="nLevel">
+            <option value="1">1-Back</option>
+            <option value="2" selected>2-Back</option>
+            <option value="3">3-Back</option>
+            <option value="4">4-Back</option>
+        </select>
+    </label>
+    <br>
+    <button id="startBtn">Start Round</button>
+</header>
+
+<div id="game">
+    <div class="grid" id="grid"></div>
+</div>
+
+<div id="controls">
+    <button id="locBtn" class="control-btn">Location Match</button>
+    <button id="audBtn" class="control-btn">Audio Match</button>
+</div>
+
+<script>
+const grid = document.getElementById("grid");
+const startBtn = document.getElementById("startBtn");
+const locBtn = document.getElementById("locBtn");
+const audBtn = document.getElementById("audBtn");
+const nLevelSelect = document.getElementById("nLevel");
+
+const cells = [];
+const validPositions = [0,1,2,3,5,6,7,8];
+const totalTurns = 30;
+const turnDuration = 3000;
+const matchProbability = 0.3;
+
+let positions = [];
+let sounds = [];
+let turn = 0;
+let n = 2;
+let locScore = 0;
+let audScore = 0;
+let locPressed = false;
+let audPressed = false;
+
+for (let i = 0; i < 9; i++) {
+    const div = document.createElement("div");
+    div.className = "cell";
+    if (i === 4) div.classList.add("center");
+    grid.appendChild(div);
+    cells.push(div);
+}
+
+function randomFrom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateStimuli() {
+    positions = [];
+    sounds = [];
+    for (let i = 0; i < totalTurns; i++) {
+        let pos, snd;
+
+        if (i >= n && Math.random() < matchProbability) {
+            pos = positions[i - n];
+        } else {
+            pos = randomFrom(validPositions);
+        }
+
+        if (i >= n && Math.random() < matchProbability) {
+            snd = sounds[i - n];
+        } else {
+            snd = Math.floor(Math.random() * 8);
+        }
+
+        positions.push(pos);
+        sounds.push(snd);
+    }
+}
+
+function playSound(num) {
+    const audio = new Audio(`sounds/${num}.wav`);
+    audio.play();
+}
+
+function clearGrid() {
+    cells.forEach(c => c.classList.remove("active"));
+}
+
+function showTurn() {
+    if (turn >= totalTurns) {
+        endRound();
+        return;
+    }
+
+    clearGrid();
+    locPressed = false;
+    audPressed = false;
+
+    const pos = positions[turn];
+    cells[pos].classList.add("active");
+
+    playSound(sounds[turn]);
+
+    setTimeout(() => {
+        clearGrid();
+        turn++;
+        setTimeout(showTurn, 200);
+    }, turnDuration);
+}
+
+locBtn.onclick = () => {
+    if (turn >= n && !locPressed) {
+        if (positions[turn] === positions[turn - n]) {
+            locScore++;
+        }
+        locPressed = true;
+    }
+};
+
+audBtn.onclick = () => {
+    if (turn >= n && !audPressed) {
+        if (sounds[turn] === sounds[turn - n]) {
+            audScore++;
+        }
+        audPressed = true;
+    }
+};
+
+function startGame() {
+    turn = 0;
+    locScore = 0;
+    audScore = 0;
+    n = parseInt(nLevelSelect.value);
+    generateStimuli();
+    showTurn();
+}
+
+function endRound() {
+    alert(
+        `Round Complete!\n\n` +
+        `Location Matches: ${locScore}\n` +
+        `Audio Matches: ${audScore}\n\n` +
+        `Total Score: ${locScore + audScore}`
+    );
+}
+
+startBtn.onclick = startGame;
+</script>
+
+</body>
+</html>
