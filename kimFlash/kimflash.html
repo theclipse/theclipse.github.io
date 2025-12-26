@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Image Flash Game</title>
   <style>
     body {
@@ -12,21 +13,29 @@
       text-align: center;
       transition: background-color 0.3s ease;
     }
+
     .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
       margin-top: 300px;
+      padding: 0 10px;
+      max-width: 880px;
+      margin-left: auto;
+      margin-right: auto;
     }
+
     .image {
-      width: 200px;
-      height: 156px;
-      margin: 10px;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 200 / 156;
       border: 0.5px solid #ccc;
       cursor: pointer;
+      object-fit: cover;
     }
   </style>
 </head>
+
 <body>
 
   <h1>Image Flash Game</h1>
@@ -118,4 +127,5 @@
   </script>
 
 </body>
+
 </html>
