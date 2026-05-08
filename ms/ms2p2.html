@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dual N-Back</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #d5e6eb;
+            overflow: hidden;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        /* =========================
+       MENU SCREEN
+    ==========================*/
+        #menuScreen {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menuBox {
+            width: 500px;
+            background: white;
+            border: 3px solid #b8c6ca;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .menuBox h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #5c4c3f;
+        }
+
+        .inputGroup {
+            margin-bottom: 20px;
+        }
+
+        .inputGroup label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #5c4c3f;
+        }
+
+        .inputGroup input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #b7c5ca;
+            border-radius: 5px;
+        }
+
+        #startTrainingBtn {
+            width: 100%;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            background: #62c75b;
+            color: white;
+            border-radius: 5px;
+        }
+
+        /* =========================
+       GAME SCREEN
+    ==========================*/
+        #gameScreen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: #bfd3da;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* LEFT PANELS */
+        .leftPanel {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 90px;
+        }
+
+        .infoBox {
+            width: 90px;
+            background: #f2f2f2;
+            border-radius: 4px;
+            padding: 8px 6px;
+            color: #845f42;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border: 1px solid #d7d7d7;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* RIGHT PANEL */
+        .rightPanel {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 90px;
+        }
+
+        /* GRID CONTAINER */
+        .gameCenter {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .gridWrapper {
+            width: 384px;
+            height: 404px;
+            background: white;
+            border-radius: 6px;
+            padding: 13px;
+        }
+
+        .grid {
+            width: 100%;
+            height: 100%;
+            background: black;
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 0;
+            padding: 42px;
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .active {
+            background: #5cc657;
+            width: 100px;
+            height: 100px;
+        }
+
+        /* BOTTOM BUTTONS */
+        .bottomControls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .controlBtn {
+            width: 62px;
+            height: 21px;
+            border: 1px solid #8c8c8c;
+            font-size: 12px;
+            background: linear-gradient(#e9e9e9, #bfbfbf);
+        }
+
+        .stopBtn {
+            background: linear-gradient(#d5ffd5, #8bcf87);
+        }
+
+        .exitBtn {
+            background: linear-gradient(#ffe6e1, #e9a087);
+        }
+
+        /* =========================
+       RESULTS SCREEN
+    ==========================*/
+        #resultsScreen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: #d5e6eb;
+            padding: 20px;
+        }
+
+        #resultsTitle {
+            font-size: 34px;
+            margin-bottom: 20px;
+            color: #5c4c3f;
+        }
+
+        #historyContainer {
+            height: 60vh;
+            overflow-y: auto;
+            background: white;
+            border: 3px solid #b7c5ca;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .resultCard {
+            border: 2px solid #b7c5ca;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #f7f7f7;
+        }
+
+        .resultCard h2 {
+            margin-bottom: 10px;
+            color: #5c4c3f;
+        }
+
+        .resultGrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .resultItem {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #nextRoundBtn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 18px;
+            font-size: 24px;
+            background: #62c75b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        /* Manual override bar */
+        #overrideBar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 14px 18px;
+            background: white;
+            border: 2px solid #b7c5ca;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #5c4c3f;
+        }
+
+        #overrideBar label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #overrideCheckbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #62c75b;
+        }
+
+        #overrideNInput {
+            width: 70px;
+            padding: 8px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #b7c5ca;
+            border-radius: 6px;
+            text-align: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #overrideNInput:focus {
+            outline: none;
+            border-color: #62c75b;
+            box-shadow: 0 0 0 3px rgba(98, 199, 91, 0.25);
+        }
+
+        #overrideNInput:disabled {
+            background: #f0f0f0;
+            color: #aaa;
+            border-color: #ddd;
+        }
+
+        #overrideNote {
+            font-size: 13px;
+            color: #888;
+            margin-left: auto;
+        }
+
+        .keyHelp {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 20px;
+            letter-spacing: 5px;
+        }
+
+        /* =========================
+           MOBILE TOUCH BUTTONS
+        ==========================*/
+        .mobileControls {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+
+            /* Hide desktop-only elements */
+            .leftPanel,
+            .rightPanel,
+            .keyHelp,
+            .bottomControls {
+                display: none !important;
+            }
+
+            /* Pin grid to top, leave room for buttons */
+            .gameCenter {
+                position: absolute;
+                left: 0;
+                top: 0;
+                transform: none;
+                width: 100vw;
+                height: calc(100vh - 90px);
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                padding-top: 10px;
+            }
+
+            .gridWrapper {
+                /* never taller than the space above the buttons */
+                width: min(90vw, calc(100vh - 110px));
+                height: min(90vw, calc(100vh - 110px));
+            }
+
+            /* Show mobile buttons */
+            .mobileControls {
+                display: flex;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 90px;
+                gap: 0;
+            }
+
+            .mobileTouchBtn {
+                flex: 1;
+                border: none;
+                font-size: 18px;
+                font-weight: bold;
+                letter-spacing: 1px;
+                color: white;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                cursor: pointer;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+                transition: filter 0.1s;
+            }
+
+            .mobileTouchBtn:active {
+                filter: brightness(0.85);
+            }
+
+            #mobileLocationBtn {
+                background: linear-gradient(#d5ffd5, #8bcf87);
+                color: #2a5a26;
+                border-radius: 0;
+            }
+
+            #mobileAudioBtn {
+                background: linear-gradient(#ffe6e1, #e9a087);
+                color: #7a2a10;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================
+     MENU SCREEN
+========================= -->
+    <div id="menuScreen">
+        <div class="menuBox">
+            <h1>Dual N-Back Trainer</h1>
+
+            <div class="inputGroup">
+                <label>Starting N-Back Level</label>
+                <input type="number" id="startLevel" min="1" value="2">
+            </div>
+
+            <div class="inputGroup">
+                <label>Maximum N-Back Level</label>
+                <input type="number" id="maxLevel" min="1" value="7">
+            </div>
+
+            <button id="startTrainingBtn">Start Training</button>
+        </div>
+    </div>
+
+    <!-- =========================
+     GAME SCREEN
+========================= -->
+    <div id="gameScreen">
+
+        <div class="leftPanel">
+            <div class="infoBox">
+                Stage Four
+            </div>
+
+            <div class="infoBox">
+                Process<br>
+                <span id="blockDisplay">Block: 1 of 20</span>
+            </div>
+        </div>
+
+        <div class="rightPanel">
+            <div class="infoBox" style="text-align:center;">
+                N = <span id="nLevelDisplay">2</span>
+            </div>
+        </div>
+
+        <div class="gameCenter">
+            <div class="gridWrapper">
+                <div class="grid" id="grid">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="keyHelp">
+            A = LOCATION &nbsp;&nbsp;&nbsp; L = AUDIO
+        </div>
+
+        <div class="bottomControls">
+            <button class="controlBtn stopBtn" id="pauseBtn">Stop</button>
+            <button class="controlBtn exitBtn" id="exitBtn">Exit</button>
+        </div>
+
+        <!-- Mobile touch buttons -->
+        <div class="mobileControls">
+            <button class="mobileTouchBtn" id="mobileLocationBtn">LOCATION</button>
+            <button class="mobileTouchBtn" id="mobileAudioBtn">AUDIO</button>
+        </div>
+    </div>
+
+    <!-- ==========================
+     RESULTS SCREEN
+========================= -->
+    <div id="resultsScreen">
+
+        <h1 id="resultsTitle">Round Results</h1>
+
+        <div id="historyContainer"></div>
+
+        <!-- Manual N Override -->
+        <div id="overrideBar">
+            <label for="overrideCheckbox">
+                <input type="checkbox" id="overrideCheckbox">
+                Manual Override &mdash; set next N level:
+            </label>
+            <input type="number" id="overrideNInput" min="1" value="2" disabled>
+            <span id="overrideNote">Auto mode active</span>
+        </div>
+
+        <button id="nextRoundBtn">Start Next Round</button>
+
+    </div>
+
+    <script>
+
+        // ================================
+        // GLOBALS
+        // ================================
+        const TOTAL_BLOCKS = 20;
+        const FLASHES_PER_BLOCK = 30;
+        const FLASH_DURATION = 3000;
+        const TOTAL_AUDIO_MATCHES = 6;
+        const TOTAL_LOCATION_MATCHES = 6;
+        let consecutiveHighScores = 0;
+
+        const positions = [
+            0, 1, 2,
+            3, 5,
+            6, 7, 8
+        ];
+
+        const audioFiles = [];
+        for (let i = 1; i <= 8; i++) {
+            audioFiles.push(new Audio(i + ".wav"));
+        }
+
+        const grid = document.getElementById("grid");
+
+        // Build 9 cells
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.id = "cell-" + i;
+            grid.appendChild(cell);
+        }
+
+        let currentN = 2;
+        let maxN = 7;
+        let currentBlock = 1;
+
+        let roundData = [];
+
+        let locationSequence = [];
+        let audioSequence = [];
+
+        let currentFlashIndex = 0;
+
+        let gameInterval = null;
+
+        let paused = false;
+
+        let awaitingLocation = false;
+        let awaitingAudio = false;
+
+        let locationResponses = [];
+        let audioResponses = [];
+
+        // ================================
+        // START TRAINING
+        // ================================
+        document.getElementById("startTrainingBtn").addEventListener("click", () => {
+
+            currentN = parseInt(document.getElementById("startLevel").value);
+            maxN = parseInt(document.getElementById("maxLevel").value);
+
+            if (currentN < 1) currentN = 1;
+            if (maxN < currentN) maxN = currentN;
+
+            currentBlock = 1;
+
+            document.getElementById("menuScreen").style.display = "none";
+            document.getElementById("resultsScreen").style.display = "none";
+
+            startRound();
+        });
+
+        // ================================
+        // GENERATE SEQUENCE
+        // ================================
+        function generateSequence(type) {
+
+            let pool;
+
+            if (type === "location") {
+                pool = [...positions];
+            } else {
+                pool = [0, 1, 2, 3, 4, 5, 6, 7];
+            }
+
+            let sequence = new Array(FLASHES_PER_BLOCK);
+
+            // =========================
+            // PICK EXACT MATCH INDICES
+            // =========================
+            let matchIndices = [];
+
+            while (matchIndices.length < 6) {
+
+                let idx =
+                    Math.floor(
+                        Math.random() * (FLASHES_PER_BLOCK - currentN)
+                    ) + currentN;
+
+                if (!matchIndices.includes(idx)) {
+                    matchIndices.push(idx);
+                }
+            }
+
+            // =========================
+            // BUILD SEQUENCE
+            // =========================
+            for (let i = 0; i < FLASHES_PER_BLOCK; i++) {
+
+                // MATCH
+                if (matchIndices.includes(i)) {
+
+                    sequence[i] = sequence[i - currentN];
+
+                } else {
+
+                    // NON MATCH
+                    let possible = [...pool];
+
+                    // remove value that would create accidental match
+                    if (i >= currentN) {
+
+                        possible = possible.filter(v =>
+                            v !== sequence[i - currentN]
+                        );
+                    }
+
+                    sequence[i] =
+                        possible[
+                        Math.floor(Math.random() * possible.length)
+                        ];
+                }
+            }
+
+            return sequence;
+        }
+
+        // ================================
+        // START ROUND
+        // ================================
+        function startRound() {
+
+            document.getElementById("gameScreen").style.display = "block";
+            document.getElementById("resultsScreen").style.display = "none";
+
+            document.getElementById("nLevelDisplay").textContent = currentN;
+            document.getElementById("blockDisplay").textContent =
+                "Block: " + currentBlock + " of 20";
+
+            locationSequence = generateSequence("location");
+            audioSequence = generateSequence("audio");
+
+            currentFlashIndex = 0;
+
+            locationResponses = [];
+            audioResponses = [];
+
+            paused = false;
+
+            runFlash();
+        }
+
+        // ================================
+        // FLASH LOOP
+        // ================================
+        function runFlash() {
+
+            if (paused) return;
+
+            if (currentFlashIndex >= FLASHES_PER_BLOCK) {
+
+                endRound();
+                return;
+            }
+
+            clearGrid();
+
+            const loc = locationSequence[currentFlashIndex];
+            const audioIndex = audioSequence[currentFlashIndex];
+
+            const cell = document.getElementById("cell-" + loc);
+
+            const square = document.createElement("div");
+            square.className = "active";
+
+            cell.appendChild(square);
+
+            audioFiles[audioIndex].currentTime = 0;
+            audioFiles[audioIndex].play();
+
+            awaitingLocation = false;
+            awaitingAudio = false;
+
+            if (currentFlashIndex >= currentN) {
+
+                if (locationSequence[currentFlashIndex]
+                    === locationSequence[currentFlashIndex - currentN]) {
+
+                    awaitingLocation = true;
+                }
+
+                if (audioSequence[currentFlashIndex]
+                    === audioSequence[currentFlashIndex - currentN]) {
+
+                    awaitingAudio = true;
+                }
+            }
+
+            setTimeout(() => {
+
+                clearGrid();
+
+            }, 500);
+
+            gameInterval = setTimeout(() => {
+                currentFlashIndex++;
+                runFlash();
+            }, FLASH_DURATION);
+        }
+
+        // ================================
+        // CLEAR GRID
+        // ================================
+        function clearGrid() {
+
+            for (let i = 0; i < 9; i++) {
+                document.getElementById("cell-" + i).innerHTML = "";
+            }
+        }
+
+        // ================================
+        // KEY INPUT
+        // ================================
+        document.addEventListener("keydown", (e) => {
+
+            if (document.getElementById("gameScreen").style.display !== "block") return;
+
+            const key = e.key.toLowerCase();
+
+            if (key === "a") {
+
+                if (locationResponses.includes(currentFlashIndex)) return;
+
+                locationResponses.push(currentFlashIndex);
+
+            }
+
+            if (key === "l") {
+
+                if (audioResponses.includes(currentFlashIndex)) return;
+
+                audioResponses.push(currentFlashIndex);
+
+            }
+        });
+
+        // ================================
+        // MOBILE TOUCH BUTTONS
+        // ================================
+        function registerMobileBtn(id, responseArray) {
+            const btn = document.getElementById(id);
+
+            // click handles desktop mouse (including narrow-window desktop)
+            btn.addEventListener("click", () => {
+                if (document.getElementById("gameScreen").style.display !== "block") return;
+                if (responseArray.includes(currentFlashIndex)) return;
+                responseArray.push(currentFlashIndex);
+            });
+
+            // touchstart handles real touch devices; preventDefault stops the
+            // subsequent synthetic click so the response isn't recorded twice
+            btn.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                if (document.getElementById("gameScreen").style.display !== "block") return;
+                if (responseArray.includes(currentFlashIndex)) return;
+                responseArray.push(currentFlashIndex);
+            }, { passive: false });
+        }
+
+        registerMobileBtn("mobileLocationBtn", locationResponses);
+        registerMobileBtn("mobileAudioBtn", audioResponses);
+
+        // ================================
+        // END ROUND
+        // ================================
+        function endRound() {
+
+            document.getElementById("gameScreen").style.display = "none";
+            document.getElementById("resultsScreen").style.display = "block";
+
+            let audioCorrect = 0;
+            let audioMissed = 0;
+            let audioIncorrect = 0;
+
+            let locationCorrect = 0;
+            let locationMissed = 0;
+            let locationIncorrect = 0;
+
+            // AUDIO
+            for (let i = currentN; i < FLASHES_PER_BLOCK; i++) {
+
+                const isMatch =
+                    audioSequence[i] === audioSequence[i - currentN];
+
+                const responded =
+                    audioResponses.includes(i);
+
+                if (isMatch && responded) audioCorrect++;
+                if (isMatch && !responded) audioMissed++;
+                if (!isMatch && responded) audioIncorrect++;
+            }
+
+            // LOCATION
+            for (let i = currentN; i < FLASHES_PER_BLOCK; i++) {
+
+                const isMatch =
+                    locationSequence[i] === locationSequence[i - currentN];
+
+                const responded =
+                    locationResponses.includes(i);
+
+                if (isMatch && responded) locationCorrect++;
+                if (isMatch && !responded) locationMissed++;
+                if (!isMatch && responded) locationIncorrect++;
+            }
+
+            let totalScore =
+                audioCorrect +
+                locationCorrect -
+                audioMissed -
+                locationMissed -
+                audioIncorrect -
+                locationIncorrect;
+
+            if (totalScore < 0) totalScore = 0;
+
+            const result = {
+                block: currentBlock,
+                nLevel: currentN,
+                audioCorrect,
+                audioMissed,
+                audioIncorrect,
+                locationCorrect,
+                locationMissed,
+                locationIncorrect,
+                totalScore
+            };
+
+            roundData.push(result);
+
+            // LEVEL CHANGE
+
+            if (totalScore >= 11) {
+
+                consecutiveHighScores++;
+
+                // Need 2 consecutive high scores to level up
+                if (consecutiveHighScores >= 2) {
+
+                    if (currentN < maxN) {
+                        currentN++;
+                    }
+
+                    consecutiveHighScores = 0;
+                }
+
+            } else {
+
+                // Break streak if score is not 11 or 12
+                consecutiveHighScores = 0;
+
+                // Move down if below 9
+                if (totalScore < 9) {
+
+                    if (currentN > 1) {
+                        currentN--;
+                    }
+                }
+            }
+
+            renderResults();
+
+            currentBlock++;
+
+            if (currentBlock > TOTAL_BLOCKS) {
+
+                document.getElementById("nextRoundBtn").textContent =
+                    "Training Complete";
+
+                document.getElementById("nextRoundBtn").disabled = true;
+            }
+        }
+
+        // ================================
+        // RENDER RESULTS
+        // ================================
+        function renderResults() {
+
+            const historyContainer =
+                document.getElementById("historyContainer");
+
+            historyContainer.innerHTML = "";
+
+            roundData.forEach(data => {
+
+                const div = document.createElement("div");
+                div.className = "resultCard";
+
+                div.innerHTML = `
+                <h2>Block ${data.block} | N Level ${data.nLevel}</h2>
+
+                <div class="resultGrid">
+
+                    <div class="resultItem">
+                        <strong>Audio Correct:</strong><br>
+                        ${data.audioCorrect}
+                    </div>
+
+                    <div class="resultItem">
+                        <strong>Location Correct:</strong><br>
+                        ${data.locationCorrect}
+                    </div>
+
+                    <div class="resultItem">
+                        <strong>Audio Missed:</strong><br>
+                        ${data.audioMissed}
+                    </div>
+
+                    <div class="resultItem">
+                        <strong>Location Missed:</strong><br>
+                        ${data.locationMissed}
+                    </div>
+
+                    <div class="resultItem">
+                        <strong>Audio Incorrect:</strong><br>
+                        ${data.audioIncorrect}
+                    </div>
+
+                    <div class="resultItem">
+                        <strong>Location Incorrect:</strong><br>
+                        ${data.locationIncorrect}
+                    </div>
+
+                    <div class="resultItem">
+                        <strong>Total Score:</strong><br>
+                        ${data.totalScore} / 12
+                    </div>
+
+                </div>
+            `;
+
+                historyContainer.prepend(div);
+            });
+        }
+
+        // ================================
+        // NEXT ROUND
+        // ================================
+        document.getElementById("nextRoundBtn")
+            .addEventListener("click", () => {
+
+                if (currentBlock <= TOTAL_BLOCKS) {
+
+                    // Apply manual override if checkbox is checked
+                    const overrideOn = document.getElementById("overrideCheckbox").checked;
+                    if (overrideOn) {
+                        const overrideVal = parseInt(document.getElementById("overrideNInput").value);
+                        if (!isNaN(overrideVal) && overrideVal >= 1) {
+                            currentN = overrideVal;
+                            consecutiveHighScores = 0; // reset streak on manual change
+                        }
+                    }
+
+                    startRound();
+                }
+            });
+
+        // ================================
+        // OVERRIDE CHECKBOX TOGGLE
+        // ================================
+        document.getElementById("overrideCheckbox")
+            .addEventListener("change", function () {
+
+                const input = document.getElementById("overrideNInput");
+                input.disabled = !this.checked;
+
+                if (this.checked) {
+                    // Pre-fill with auto-calculated N as a starting point
+                    input.value = currentN;
+                    input.focus();
+                }
+
+                updateOverrideNote();
+            });
+
+        function updateOverrideNote() {
+            const overrideOn = document.getElementById("overrideCheckbox").checked;
+            const note = document.getElementById("overrideNote");
+            note.textContent = overrideOn
+                ? "\u26a0\ufe0f Override active \u2014 auto-level paused"
+                : "Auto mode active";
+            note.style.color = overrideOn ? "#c0392b" : "#888";
+        }
+
+        // ================================
+        // PAUSE BUTTON
+        // ================================
+        document.getElementById("pauseBtn")
+            .addEventListener("click", () => {
+
+                paused = !paused;
+
+                if (paused) {
+
+                    clearTimeout(gameInterval);
+
+                    document.getElementById("pauseBtn")
+                        .textContent = "Resume";
+
+                } else {
+
+                    document.getElementById("pauseBtn")
+                        .textContent = "Stop";
+
+                    runFlash();
+                }
+            });
+
+        // ================================
+        // EXIT BUTTON
+        // ================================
+        document.getElementById("exitBtn")
+            .addEventListener("click", () => {
+
+                clearTimeout(gameInterval);
+
+                document.getElementById("gameScreen").style.display = "none";
+                document.getElementById("menuScreen").style.display = "flex";
+
+                clearGrid();
+            });
+
+    </script>
+
+</body>
+
+</html>
